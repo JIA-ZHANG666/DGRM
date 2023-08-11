@@ -42,11 +42,7 @@ class LocalToSemantic(nn.Module):
 
         self.relu = nn.ReLU(inplace=False)
 
-    # 输入x的维度应该是[?, Dl, H, W]
     def forward(self, x):
-
-        #[?,M,H,W]
-        #print("@@@@@@@x:",x.size())
         votes = self.conv1(x)
         votes = F.softmax(votes, dim=1)
         #[？，M, H, W]->[？，M, H*W]
@@ -61,7 +57,6 @@ class LocalToSemantic(nn.Module):
 
       
         return visual_features
-        #return vote_M
 
 
 #Graph Reasoning Module
@@ -99,7 +94,7 @@ class GraphConvolution(nn.Module):
             return output
 
 
-"""class GloRe(nn.Module):
+class GloRe(nn.Module):
     def __init__(self, in_channels):
         super(GloRe, self).__init__()
         self.N = in_channels // 8
@@ -107,109 +102,11 @@ class GraphConvolution(nn.Module):
         
         self.theta = nn.Conv2d(in_channels, self.N, 1, 1, 0, bias=False)
         self.bn_theta = BatchNorm2d(self.N)
-        self.phi = nn.Conv2d(in_channels, self.S, 1, 1, 0, bias=False)
-        self.bn_phi = BatchNorm2d(self.S)
-        
         self.relu = nn.ReLU()
         
         self.node_conv = nn.Sequential(nn.Conv1d(self.N, self.N, 1, 1, 0, bias=False),nn.BatchNorm1d(self.N))
         self.channel_conv = nn.Sequential(nn.Conv1d(self.S, self.S, 1, 1, 0, bias=False),nn.BatchNorm1d(self.S))
         
-        # このunitに入力された時のチャンネル数と合わせるためのconv layer
-        self.conv_2 = nn.Conv2d(self.S, in_channels, 1, 1, 0, bias=False)
-        self.bn3 = BatchNorm2d(in_channels)
-        
-    def forward(self, x):
-        batch, C, H, W = x.size()
-        L = H * W
-    
-        B = self.theta(x)
-        B = self.bn_theta(B).view(-1, self.N, L)
-        phi = x
-        phi = phi.view(-1, self.S, L)
-        #phi = self.phi(x)
-        #phi = self.bn_phi(phi).view(-1, self.S, L)
-        phi = torch.transpose(phi, 1, 2)
-
-        V = torch.bmm(B, phi) / L #著者コード中にある謎割り算
-        V = self.relu(self.node_conv(V))
-        V = self.relu(self.channel_conv(torch.transpose(V, 1, 2)))
-
-        y = torch.bmm(torch.transpose(B, 1, 2), torch.transpose(V, 1, 2))
-        #y = F.softmax(y, dim=2)
-        y = y.view(-1, self.S, H, W)
-        #y = self.relu(x + y)
-        #y = torch.cat((x, y),1)
-        y = self.conv_2(y)
-        y = self.relu(self.bn3(y)) 
-        
-        return y"""
-        
-
-"""class GloRe(nn.Module):#0.68907,crf-0.7042
-    def __init__(self, in_channels):
-        super(GloRe, self).__init__()
-        self.N = in_channels // 8
-        self.S = in_channels // 1
-        
-        self.theta = nn.Conv2d(in_channels, self.N, 1, 1, 0, bias=False)
-        self.bn_theta = BatchNorm2d(self.N)
-        self.phi = nn.Conv2d(in_channels, self.S, 1, 1, 0, bias=False)
-        self.bn_phi = BatchNorm2d(self.S)
-        
-        self.relu = nn.ReLU()
-        
-        self.node_conv = nn.Sequential(nn.Conv1d(self.N, self.N, 1, 1, 0, bias=False),nn.BatchNorm1d(self.N))
-        self.channel_conv = nn.Sequential(nn.Conv1d(self.S, self.S, 1, 1, 0, bias=False),nn.BatchNorm1d(self.S))
-        #self.node_conv = nn.Conv1d(self.N, self.N, 1, 1, 0, bias=False)
-        #self.channel_conv = nn.Conv1d(self.S, self.S, 1, 1, 0, bias=False)
-        
-        # このunitに入力された時のチャンネル数と合わせるためのconv layer
-        self.conv_2 = nn.Conv2d(self.S, in_channels, 1, 1, 0, bias=False)
-        self.bn3 = BatchNorm2d(in_channels)
-        
-    def forward(self, x):
-        batch, C, H, W = x.size()
-        L = H * W
-        
-        B = self.theta(x).view(-1, self.N, L)
-        #B = self.theta(x)
-        #B = self.bn_theta(B).view(-1, self.N, L)
-        phi = x
-        phi = phi.view(-1, self.S, L)
-        #phi = self.phi(x)
-        #phi = self.bn_phi(phi).view(-1, self.S, L)
-        phi = torch.transpose(phi, 1, 2)
-
-        V = torch.bmm(B, phi) / L #著者コード中にある謎割り算
-        V = self.relu(self.node_conv(V))
-        V = self.relu(self.channel_conv(torch.transpose(V, 1, 2)))
-        
-        y = torch.bmm(torch.transpose(B, 1, 2), torch.transpose(V, 1, 2))
-        y = y.view(-1, self.S, H, W)
-        y = self.conv_2(y)
-        y = self.bn3(y)
-        #y = self.relu(y)
-        
-        return y"""
-
-
-
-class GloRe(nn.Module):#0.68907,crf-0.7042
-    def __init__(self, in_channels):
-        super(GloRe, self).__init__()
-        self.N = in_channels // 8
-        self.S = in_channels // 1
-        
-        self.theta = nn.Conv2d(in_channels, self.N, 1, 1, 0, bias=False)
-        self.bn_theta = BatchNorm2d(self.N)
-        self.phi = nn.Conv2d(in_channels, self.S, 1, 1, 0, bias=False)
-        self.bn_phi = BatchNorm2d(self.S)
-        self.relu = nn.ReLU()
-        
-        self.node_conv = nn.Sequential(nn.Conv1d(self.N, self.N, 1, 1, 0, bias=False),nn.BatchNorm1d(self.N))
-        self.channel_conv = nn.Sequential(nn.Conv1d(self.S, self.S, 1, 1, 0, bias=False),nn.BatchNorm1d(self.S))
-        # このunitに入力された時のチャンネル数と合わせるためのconv layer
         self.conv_2 = nn.Conv2d(self.S, in_channels, 1, 1, 0, bias=False)
         self.bn3 = BatchNorm2d(in_channels)
         
@@ -221,11 +118,9 @@ class GloRe(nn.Module):#0.68907,crf-0.7042
         #B = self.bn_theta(B).view(-1, self.N, L)
         phi = x
         phi = phi.view(-1, self.S, L)
-        #phi = self.phi(x)
-        #phi = self.bn_phi(phi).view(-1, self.S, L)
         phi = torch.transpose(phi, 1, 2)
 
-        V = torch.bmm(B, phi) / L #著者コード中にある謎割り算
+        V = torch.bmm(B, phi) / L
         #V = self.relu(V)
         V = self.relu(self.node_conv(V))
         #V = v1 - V
@@ -234,14 +129,10 @@ class GloRe(nn.Module):#0.68907,crf-0.7042
         #V = self.channel_conv(torch.transpose(V, 1, 2))
         
         y = torch.bmm(torch.transpose(B, 1, 2), torch.transpose(V, 1, 2))
-        #print("######y：",y.size())
         #y = F.softmax(y, dim=1)
         y = y.view(-1, self.S, H, W)
-        #print("######y1：",y.size())
         y = self.conv_2(y)
         y = self.bn3(y)
-        #y = F.softmax(y, dim=-1)
-        #y = self.relu(y)
         return y
 
 
@@ -277,7 +168,6 @@ class SemanticToLocal(nn.Module):
         batch_concat = batch_concat[np.newaxis,:,:,:]
         # [H*W, M, Dc+Dl] =>[1,Dc+Dl,H*W, M]
         batch_concat = batch_concat.transpose(2,3).transpose(1,2)
-        #print("@@@@@@@batch_concat",batch_concat.size())
         #[1,Dc+Dl,H*W, M] =>[1,1,H*W, M]
         mapping = self.conv1(batch_concat)
         #[1,1,H*W, M] => [1, H*W, M, 1]
@@ -329,8 +219,8 @@ class GRMLayer(nn.Module):
                                                              num_symbol_node)
 
 
-        self.graph_reasoning1 = GraphConvolution(300,128)#256-0.6865,300-0.6877,512-0.680,600-0.6881,500-0.684
-        self.graph_reasoning2 = GraphConvolution(128,input_feature_channels)#(128,512)-685,900-0.6853
+        self.graph_reasoning1 = GraphConvolution(300,128)
+        self.graph_reasoning2 = GraphConvolution(128,input_feature_channels)
 
         self.glore = GloRe(input_feature_channels)
         self.final = nn.Sequential(nn.Conv2d(input_feature_channels* 2, input_feature_channels, kernel_size=1, bias=False))
@@ -345,17 +235,13 @@ class GRMLayer(nn.Module):
 
 
     def forward(self, x):
-        #[？，M, H*W]
-        
         visual_feat = x
-
         voit = self.local__to_semantic(x)
         
         #fasttest_embeddings = self.fasttest_embeddings.unsqueeze(0)
         #fasttest_embeddings = fasttest_embeddings.repeat(visual_feat.size(0), 1, 1)
         #fasttest_embeddings = fasttest_embeddings.to(visual_feat.cuda())
 
-        #fasttest_embeddings = torch.cat([fasttest_embeddings,voit], dim=-1)
         fasttest_embeddings = voit
     
         graph_norm_adj = normalize_adjacency(self.graph_adj_mat)
@@ -368,7 +254,6 @@ class GRMLayer(nn.Module):
             batch_list.append(batch)
         # [?, M, H*W]
         evolved_feat = torch.stack(batch_list, dim=0)
-        #print("#######evolved_feat:",evolved_feat.size())
         batch_list1 = []
         for index in range(evolved_feat.size(0)):
             evolved_feats = F.dropout(evolved_feat[index], 0.3)
@@ -381,28 +266,23 @@ class GRMLayer(nn.Module):
         enhanced_feat = self.semantic_to_local(x, evolved_feat1)
         
         out1 = enhanced_feat
-        #out1 = F.relu_(x + enhanced_feat)
-        #x1 = F.dropout(x, 0.1)
-        out2 =self.glore(x)#原始0.6923-crf-0.7070
+        out2 =self.glore(x)
 
         #out =x + out1 + out2
         #out =out2 + out1
         out = self.final(torch.cat((out1, out2), 1))
-        
         #out = out + x
-        #out = out1 + x
 
         return out
 
 
-class DualGCNHead(nn.Module):#0.6908,0.7055
+class DualGCNHead(nn.Module):
 
     def __init__(self, input_feature_channels,  visual_feature_channels, num_symbol_node,
                  fasttest_embeddings, fasttest_dim, graph_adj_mat):
         super(DualGCNHead, self).__init__()
 
         self.maxpool = nn.MaxPool2d(2, stride=2, ceil_mode=True)
-        #self.avgpool = nn.AvgPool2d(2, stride=2, ceil_mode=True)
         self.final = nn.Sequential(nn.Conv2d(input_feature_channels*2, input_feature_channels, kernel_size=1, bias=False),
                                    BatchNorm2d(input_feature_channels))
 
@@ -413,41 +293,17 @@ class DualGCNHead(nn.Module):#0.6908,0.7055
 
 
     def forward(self, x):
-        #h,w = x.size()[-2:]
         gc1 = self.dgc(x)
-        #x1 = F.adaptive_avg_pool2d(x, (h//2, w//2))
         x1 = self.maxpool(x)
-        #x1 = self.avgpool(x)
         gc2 = self.dgc(x1)
-        #x2 = F.adaptive_avg_pool2d(x, (h//4, w//4))
         x2 = self.maxpool(x1)
-        #x2 = self.avgpool(x1)
         gc3= self.dgc(x2)
-        
-       # gc3 = F.interpolate(gc3, size=(x.shape[2], x.shape[3]), mode="bilinear")
-        #gc2 = F.interpolate(gc2, size=(x.shape[2], x.shape[3]), mode="bilinear")
-        
-        #out2_s = out2_2 + F.interpolate(out2_3, size=(x1.shape[2], x1.shape[3]), mode="bilinear")
-        #out2 = out2 + F.interpolate(out2_s, size=(x.shape[2], x.shape[3]), mode="bilinear")
-        
-        #gc3 = F.interpolate(gc3, size=(x.shape[2], x.shape[3]), mode="bilinear")
-        #gc2 = F.interpolate(gc2, size=(x.shape[2], x.shape[3]), mode="bilinear")
+    
         gc3 = gc2 + F.interpolate(gc3, size=(x1.shape[2], x1.shape[3]), mode="bilinear")
-        #gc3_s = self.final(torch.cat((gc2, gc3), 1))
         out =gc1 + F.interpolate(gc3, size=(x.shape[2], x.shape[3]), mode="bilinear")
-        #out = self.final(torch.cat((gc1, out), 1))
-        #out = self.final(torch.cat((out1, out2), 1))
-        
-        #out1 = gc2 + F.interpolate(gc3, size=(x1.shape[2], x1.shape[3]), mode="bilinear")
-        #out1 = gc1 + F.interpolate(out1, size=(x.shape[2], x.shape[3]), mode="bilinear")
         #out = self.final(torch.cat((out1, out2), 1))
         out =x + out
-        #out = out1+out2#0.551
         #out =x + gc1 + out2
-        #gc3_up = F.interpolate(gc3, size=(x1.shape[2], x1.shape[3]), mode="bilinear")
-        #gc2_comb = torch.add(gc3_up, gc2)
-        #gc2_comb_up = F.interpolate(gc2_comb, size=(x.shape[2], x.shape[3]), mode="bilinear")
-        #gc1_comb = torch.add(gc2_comb_up, gc1)
         
         return out
 
