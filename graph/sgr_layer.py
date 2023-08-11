@@ -10,20 +10,13 @@ import numpy as np
 from .graph_util import *
 #from graph.coco_data import *
 from omegaconf import OmegaConf
-#from .global_settings import GPU_ID
+
 from torch.autograd import Variable
 from torch.nn import Parameter
 import math
-#from .init_weights import init_weights
 
 BatchNorm2d = nn.BatchNorm2d
 BatchNorm1d = nn.BatchNorm1d
-
-#cuda_suffix = 'cuda:' + str(GPU_ID) if len(str(GPU_ID)) == 1 else "cuda"
-#device = torch.device(cuda_suffix if torch.cuda.is_available() else "cpu")
-
-
-
 
 class LocalToSemantic(nn.Module):
     # [?, Dl, H, W]
